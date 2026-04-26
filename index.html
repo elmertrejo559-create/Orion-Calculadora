@@ -1,61 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ORION ULTRA PRO</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+    background:#0a0f1c;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+}
+
+.container{
+    max-width:400px;
+    margin:auto;
+    padding:20px;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin:5px 0;
+    border-radius:8px;
+    border:none;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    background:#00f7ff;
+    border:none;
+    border-radius:10px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+canvas{
+    margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🚀 ORION ULTRA PRO</h2>
+
+<input id="balance" placeholder="Balance ($)" value="1500">
+<input id="lot" placeholder="Lote" value="0.30">
+<input id="leverage" placeholder="Leverage" value="500">
+<input id="stopout" placeholder="Stop Out (%)" value="20">
+
+<button onclick="simular()">Simular</button>
+<button onclick="mejorLote()">Calcular mejor lote</button>
+
+<h3 id="resultado"></h3>
+
+<canvas id="grafico"></canvas>
+
+</div>
+
 <script>
 
 let entradas = [0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
 14200,19200,25200,32200,40200,49200,59200,69200,79200,89200,99200,109200,119200,129200];
 
-function calcular(){
+let chart;
 
-let balance = parseFloat(document.getElementById("balance").value);
-let lot = parseFloat(document.getElementById("lot").value);
+function simular(){
 
-if(balance <= 0 || lot <= 0){
-    document.getElementById("resultado").innerHTML = "❌ Datos inválidos";
-    return;
-}
+let balance = parseFloat(balanceInput.value);
+let lot = parseFloat(lotInput.value);
+let leverage = parseFloat(leverageInput.value);
+let stopout = parseFloat(stopoutInput.value);
 
-// Valor pip
 let pipValue = 0.0001 * (lot/0.01);
 
-let maxPips = 0;
-let muerto = false;
+let equityArray = [];
+let pipArray = [];
 
-// aumentamos rango y precisión
-for(let drop=0; drop<=1000000; drop+=10){
+let muerto = false;
+let muertePips = 0;
+
+for(let drop=0; drop<=150000; drop+=500){
 
     let loss = 0;
+    let ops = 0;
 
     for(let i=0;i<entradas.length;i++){
         if(drop >= entradas[i]){
             loss += (drop - entradas[i]) * pipValue;
+            ops++;
         }
     }
 
+    let margin = (lot * ops * 100000) / leverage;
     let equity = balance - loss;
+    let marginLevel = (equity / margin) * 100;
 
-    if(equity <= 0){
-        maxPips = drop;
+    equityArray.push(equity);
+    pipArray.push(drop);
+
+    if(marginLevel <= stopout){
         muerto = true;
+        muertePips = drop;
         break;
     }
 }
 
-// validación si nunca murió
-if(!muerto){
-    document.getElementById("resultado").innerHTML =
-    "⚠️ Soporta más de 1,000,000 pips (fuera de rango)";
-    return;
+resultado.innerHTML = muerto
+? "💀 Margin Call en: <b>" + muertePips.toLocaleString() + " pips</b>"
+: "🔥 Sobrevive todo el rango";
+
+dibujarGrafico(pipArray, equityArray);
 }
 
-// validación extrema
-if(maxPips < 500){
-    document.getElementById("resultado").innerHTML =
-    "🚨 Cuenta extremadamente riesgosa (muere casi instantáneo)";
-    return;
+function mejorLote(){
+
+let balance = parseFloat(balanceInput.value);
+
+let mejor = 0;
+
+for(let lot=0.01; lot<=1; lot+=0.01){
+
+    let pipValue = 0.0001 * (lot/0.01);
+    let sobrevive = true;
+
+    for(let drop=0; drop<=120000; drop+=1000){
+
+        let loss = 0;
+
+        for(let i=0;i<entradas.length;i++){
+            if(drop >= entradas[i]){
+                loss += (drop - entradas[i]) * pipValue;
+            }
+        }
+
+        let equity = balance - loss;
+
+        if(equity <= 0){
+            sobrevive = false;
+            break;
+        }
+    }
+
+    if(sobrevive){
+        mejor = lot;
+    }
 }
 
-document.getElementById("resultado").innerHTML =
-"🔥 Aguanta hasta:<br><b>" + maxPips.toLocaleString() + " pips</b>";
+resultado.innerHTML = "✅ Mejor lote aprox: <b>" + mejor.toFixed(2) + "</b>";
+}
 
+function dibujarGrafico(pips, equity){
+
+if(chart) chart.destroy();
+
+let ctx = document.getElementById("grafico");
+
+chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: pips,
+        datasets: [{
+            label: 'Equity',
+            data: equity,
+            borderWidth: 2
+        }]
+    }
+});
 }
 
 </script>
+
+</body>
+</html>
