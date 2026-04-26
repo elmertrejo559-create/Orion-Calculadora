@@ -1,120 +1,27 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Orion Calculator</title>
-
-<style>
-
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: radial-gradient(circle at top, #0f2027, #000000);
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-/* CONTENEDOR */
-.container {
-    background: rgba(20, 20, 20, 0.85);
-    padding: 30px;
-    border-radius: 20px;
-    width: 360px;
-    box-shadow: 0 0 40px rgba(0,255,255,0.2);
-    border: 1px solid rgba(0,255,255,0.3);
-}
-
-/* LOGO */
-.logo {
-    text-align: center;
-    font-size: 26px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #00f7ff;
-    letter-spacing: 2px;
-}
-
-/* TITULO */
-h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    font-weight: 300;
-}
-
-/* INPUTS */
-input {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border-radius: 10px;
-    border: none;
-    background: #111;
-    color: white;
-    outline: none;
-}
-
-/* BOTON */
-button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 10px;
-    background: linear-gradient(90deg, #00f7ff, #0072ff);
-    color: black;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-button:hover {
-    transform: scale(1.05);
-}
-
-/* RESULTADO */
-.resultado {
-    margin-top: 20px;
-    text-align: center;
-    font-size: 18px;
-    color: #00ffcc;
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-<div class="logo">🚀 ORION</div>
-
-<h2>Simulador de Pips</h2>
-
-<input id="balance" placeholder="Balance ($)" value="1500">
-<input id="lot" placeholder="Lote" value="0.10">
-
-<button onclick="calcular()">Calcular</button>
-
-<div class="resultado" id="resultado"></div>
-
-</div>
-
 <script>
 
 let entradas = [0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
 14200,19200,25200,32200,40200,49200,59200,69200,79200,89200,99200,109200,119200,129200];
 
 function calcular(){
+
 let balance = parseFloat(document.getElementById("balance").value);
 let lot = parseFloat(document.getElementById("lot").value);
 
-let pipValue = 0.0001 * (lot/0.01);
-let maxPips = 0;
+if(balance <= 0 || lot <= 0){
+    document.getElementById("resultado").innerHTML = "❌ Datos inválidos";
+    return;
+}
 
-for(let drop=0; drop<=200000; drop+=100){
+// Valor pip
+let pipValue = 0.0001 * (lot/0.01);
+
+let maxPips = 0;
+let muerto = false;
+
+// aumentamos rango y precisión
+for(let drop=0; drop<=1000000; drop+=10){
+
     let loss = 0;
 
     for(let i=0;i<entradas.length;i++){
@@ -127,15 +34,28 @@ for(let drop=0; drop<=200000; drop+=100){
 
     if(equity <= 0){
         maxPips = drop;
+        muerto = true;
         break;
     }
 }
 
+// validación si nunca murió
+if(!muerto){
+    document.getElementById("resultado").innerHTML =
+    "⚠️ Soporta más de 1,000,000 pips (fuera de rango)";
+    return;
+}
+
+// validación extrema
+if(maxPips < 500){
+    document.getElementById("resultado").innerHTML =
+    "🚨 Cuenta extremadamente riesgosa (muere casi instantáneo)";
+    return;
+}
+
 document.getElementById("resultado").innerHTML =
 "🔥 Aguanta hasta:<br><b>" + maxPips.toLocaleString() + " pips</b>";
+
 }
 
 </script>
-
-</body>
-</html>
