@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Simulador PRO - Máximo de Pips</title>
+<style>
+body { font-family: Arial; padding:20px; background:#111; color:#eee; }
+input { padding:5px; margin:5px; }
+button { padding:8px; margin-top:10px; }
+</style>
+</head>
+<body>
+
+<h2>Simulador PRO (¿Cuántos pips aguanta tu cuenta?)</h2>
+
+<label>Balance ($):</label>
+<input id="balance" value="1500"><br>
+
+<label>Lote:</label>
+<input id="lot" value="0.30"><br>
+
+<label>Leverage:</label>
+<input id="leverage" value="500"><br>
+
+<button onclick="calcular()">Calcular</button>
+
+<h3 id="resultado"></h3>
+
+<script>
+let entradas = [0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
+14200,19200,25200,32200,40200,49200,59200,69200,79200,89200,99200,109200,119200,129200];
+
+function calcular(){
+let balance = parseFloat(document.getElementById("balance").value);
+let lot = parseFloat(document.getElementById("lot").value);
+
+let pipValue = 0.0001 * (lot/0.01);
+
+let maxPips = 0;
+
+for(let drop=0; drop<=200000; drop+=100){
+    let loss = 0;
+
+    for(let i=0;i<entradas.length;i++){
+        if(drop >= entradas[i]){
+            loss += (drop - entradas[i]) * pipValue;
+        }
+    }
+
+    let equity = balance - loss;
+
+    if(equity <= 0){
+        maxPips = drop;
+        break;
+    }
+}
+
+document.getElementById("resultado").innerHTML =
+"🔥 Máximo de pips que aguanta tu cuenta:<br><br>" +
+"<b>" + maxPips.toLocaleString() + " pips</b>";
+}
+</script>
+
+</body>
+</html>
