@@ -7,39 +7,71 @@
 
 <style>
 body{
-    background:#0a0f1c;
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, #0f2027, #000000);
     color:white;
-    font-family:Arial;
-    text-align:center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
 }
 
 .container{
-    max-width:400px;
-    margin:auto;
-    padding:20px;
+    background: rgba(20,20,20,0.9);
+    padding:25px;
+    border-radius:20px;
+    width:380px;
+    box-shadow:0 0 40px rgba(0,255,255,0.2);
+    border:1px solid rgba(0,255,255,0.2);
+}
+
+.logo{
+    text-align:center;
+    font-size:24px;
+    color:#00f7ff;
+    margin-bottom:10px;
+}
+
+h2{
+    text-align:center;
+    margin-bottom:15px;
 }
 
 input{
     width:100%;
     padding:10px;
-    margin:5px 0;
+    margin:6px 0;
     border-radius:8px;
     border:none;
+    background:#111;
+    color:white;
 }
 
 button{
     width:100%;
     padding:12px;
-    margin-top:10px;
-    background:#00f7ff;
+    margin-top:8px;
     border:none;
     border-radius:10px;
+    background:linear-gradient(90deg,#00f7ff,#0072ff);
+    color:black;
     font-weight:bold;
     cursor:pointer;
 }
 
+button:hover{
+    transform:scale(1.03);
+}
+
+#resultado{
+    margin-top:15px;
+    text-align:center;
+    color:#00ffcc;
+}
+
 canvas{
-    margin-top:20px;
+    margin-top:15px;
 }
 </style>
 </head>
@@ -48,17 +80,18 @@ canvas{
 
 <div class="container">
 
-<h2>🚀 ORION ULTRA PRO</h2>
+<div class="logo">🚀 ORION</div>
+<h2>Simulador PRO</h2>
 
-<input id="balance" placeholder="Balance ($)" value="1500">
-<input id="lot" placeholder="Lote" value="0.30">
-<input id="leverage" placeholder="Leverage" value="500">
-<input id="stopout" placeholder="Stop Out (%)" value="20">
+<input id="balance" value="1500" placeholder="Balance ($)">
+<input id="lot" value="0.30" placeholder="Lote">
+<input id="leverage" value="500" placeholder="Leverage">
+<input id="stopout" value="20" placeholder="Stop Out (%)">
 
 <button onclick="simular()">Simular</button>
-<button onclick="mejorLote()">Calcular mejor lote</button>
+<button onclick="mejorLote()">Mejor lote</button>
 
-<h3 id="resultado"></h3>
+<div id="resultado"></div>
 
 <canvas id="grafico"></canvas>
 
@@ -71,12 +104,18 @@ let entradas = [0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
 
 let chart;
 
+// SIMULACIÓN
 function simular(){
 
-let balance = parseFloat(balanceInput.value);
-let lot = parseFloat(lotInput.value);
-let leverage = parseFloat(leverageInput.value);
-let stopout = parseFloat(stopoutInput.value);
+let balance = parseFloat(document.getElementById("balance").value);
+let lot = parseFloat(document.getElementById("lot").value);
+let leverage = parseFloat(document.getElementById("leverage").value);
+let stopout = parseFloat(document.getElementById("stopout").value);
+
+if(isNaN(balance) || isNaN(lot)){
+    resultado.innerHTML = "❌ Datos inválidos";
+    return;
+}
 
 let pipValue = 0.0001 * (lot/0.01);
 
@@ -100,6 +139,9 @@ for(let drop=0; drop<=150000; drop+=500){
 
     let margin = (lot * ops * 100000) / leverage;
     let equity = balance - loss;
+
+    if(margin === 0) margin = 1;
+
     let marginLevel = (equity / margin) * 100;
 
     equityArray.push(equity);
@@ -119,9 +161,10 @@ resultado.innerHTML = muerto
 dibujarGrafico(pipArray, equityArray);
 }
 
+// MEJOR LOTE
 function mejorLote(){
 
-let balance = parseFloat(balanceInput.value);
+let balance = parseFloat(document.getElementById("balance").value);
 
 let mejor = 0;
 
@@ -156,6 +199,7 @@ for(let lot=0.01; lot<=1; lot+=0.01){
 resultado.innerHTML = "✅ Mejor lote aprox: <b>" + mejor.toFixed(2) + "</b>";
 }
 
+// GRÁFICO
 function dibujarGrafico(pips, equity){
 
 if(chart) chart.destroy();
@@ -169,8 +213,16 @@ chart = new Chart(ctx, {
         datasets: [{
             label: 'Equity',
             data: equity,
-            borderWidth: 2
+            borderWidth: 2,
+            tension: 0.2
         }]
+    },
+    options:{
+        plugins:{legend:{labels:{color:"white"}}},
+        scales:{
+            x:{ticks:{color:"white"}},
+            y:{ticks:{color:"white"}}
+        }
     }
 });
 }
