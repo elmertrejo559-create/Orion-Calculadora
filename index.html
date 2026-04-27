@@ -43,15 +43,10 @@ body{
 }
 
 /* INPUTS */
-input{
-    width:100%;
-    padding:12px;
-    margin:6px 0;
-    border:none;
-    border-radius:8px;
-    background:#1a1a1a;
-    color:white;
-}
+<input id="balance" value="1500" placeholder="Balance ($)">
+<input id="lot" value="0.30" placeholder="Lote">
+<input id="leverage" value="500" placeholder="Leverage">
+<input id="stopout" value="20" placeholder="Stop Out %">
 
 /* BUTTON */
 button{
@@ -149,13 +144,15 @@ let entradas=[0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
 let chart;
 
 // SIMULAR
-function simular(){
+let balance = parseFloat(document.getElementById("balance").value);
+let lot = parseFloat(document.getElementById("lot").value);
+let leverage = parseFloat(document.getElementById("leverage").value);
+let stopout = parseFloat(document.getElementById("stopout").value);
 
-let balance=parseFloat(balance.value);
-let lot=parseFloat(lot.value);
-let leverage=parseFloat(leverage.value);
-let stopout=parseFloat(stopout.value);
-
+if(isNaN(balance) || isNaN(lot) || isNaN(leverage) || isNaN(stopout)){
+    document.getElementById("resultado").innerHTML = "⚠️ Completa todos los campos";
+    return;
+}
 // FIX
 balance=parseFloat(document.getElementById("balance").value);
 lot=parseFloat(document.getElementById("lot").value);
