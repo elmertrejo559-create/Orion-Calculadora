@@ -70,7 +70,7 @@ button{
     color:#00ffcc;
 }
 
-/* RESPONSIVE EXTRA */
+/* RESPONSIVE */
 @media(max-width:480px){
     .container{
         margin:10px;
@@ -98,6 +98,7 @@ button{
 <input id="stopout" placeholder="Stop Out (%)" value="20">
 
 <button onclick="simular()">SIMULAR</button>
+<button onclick="mejorLote()">MEJOR LOTE</button>
 
 <div id="resultado"></div>
 
@@ -108,6 +109,7 @@ button{
 let entradas = [0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
 14200,19200,25200,32200,40200,49200,59200,69200,79200,89200,99200,109200,119200,129200];
 
+// SIMULAR
 function simular(){
 
 let balance = parseFloat(document.getElementById("balance").value);
@@ -123,7 +125,7 @@ if(isNaN(balance) || isNaN(lot) || isNaN(leverage)){
 // valor del pip
 let pipValue = 0.0001 * (lot/0.01);
 
-// 🔥 VALIDACIÓN DE MUERTE INMEDIATA
+// validación margen
 let marginInicial = (lot * 100000) / leverage;
 
 if(marginInicial > balance){
@@ -134,7 +136,7 @@ if(marginInicial > balance){
 
 let muerteExacta = 0;
 
-// 🔥 CÁLCULO PRECISO (1 pip real)
+// cálculo preciso
 for(let drop=0; drop<=150000; drop++){
 
     let loss = 0;
@@ -162,6 +164,65 @@ for(let drop=0; drop<=150000; drop++){
 
 document.getElementById("resultado").innerHTML =
 "💀 Margin Call en:<br><b>" + muerteExacta.toLocaleString() + " pips</b>";
+
+}
+
+// MEJOR LOTE
+function mejorLote(){
+
+let balance = parseFloat(document.getElementById("balance").value);
+let leverage = parseFloat(document.getElementById("leverage").value);
+let stopout = parseFloat(document.getElementById("stopout").value);
+
+if(isNaN(balance) || isNaN(leverage)){
+    document.getElementById("resultado").innerHTML = "❌ Datos inválidos";
+    return;
+}
+
+let mejor = 0;
+
+for(let lot=0.01; lot<=1; lot+=0.01){
+
+    let pipValue = 0.0001 * (lot/0.01);
+
+    let marginInicial = (lot * 100000) / leverage;
+
+    if(marginInicial > balance) continue;
+
+    let sobrevive = true;
+
+    for(let drop=0; drop<=120000; drop+=1000){
+
+        let loss = 0;
+        let ops = 0;
+
+        for(let i=0;i<entradas.length;i++){
+            if(drop >= entradas[i]){
+                loss += (drop - entradas[i]) * pipValue;
+                ops++;
+            }
+        }
+
+        let margin = (lot * ops * 100000) / leverage;
+        let equity = balance - loss;
+
+        if(margin === 0) continue;
+
+        let marginLevel = (equity / margin) * 100;
+
+        if(marginLevel <= stopout){
+            sobrevive = false;
+            break;
+        }
+    }
+
+    if(sobrevive){
+        mejor = lot;
+    }
+}
+
+document.getElementById("resultado").innerHTML =
+"✅ Mejor lote: <b>" + mejor.toFixed(2) + "</b>";
 
 }
 
