@@ -2,76 +2,84 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>ORION ULTRA PRO</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORION PRO</title>
 
 <style>
 body{
     margin:0;
     font-family: 'Segoe UI', sans-serif;
-    background: radial-gradient(circle at top, #0f2027, #000000);
+    background:#0a0f1c;
     color:white;
     display:flex;
     justify-content:center;
     align-items:center;
-    height:100vh;
+    min-height:100vh;
 }
 
 .container{
-    background: rgba(20,20,20,0.9);
-    padding:25px;
-    border-radius:20px;
-    width:380px;
-    box-shadow:0 0 40px rgba(0,255,255,0.2);
-    border:1px solid rgba(0,255,255,0.2);
+    width:100%;
+    max-width:420px;
+    padding:20px;
+    background:#111;
+    border-radius:15px;
+    box-shadow:0 0 20px rgba(0,255,255,0.2);
 }
 
+/* LOGO */
 .logo{
-    text-align:center;
-    font-size:24px;
-    color:#00f7ff;
-    margin-bottom:10px;
-}
-
-h2{
     text-align:center;
     margin-bottom:15px;
 }
 
+.logo img{
+    width:200px;
+    max-width:100%;
+}
+
+/* INPUTS */
 input{
     width:100%;
-    padding:10px;
+    padding:12px;
     margin:6px 0;
     border-radius:8px;
     border:none;
-    background:#111;
+    background:#1a1a1a;
     color:white;
+    font-size:16px;
 }
 
+/* BOTONES */
 button{
     width:100%;
-    padding:12px;
-    margin-top:8px;
+    padding:14px;
+    margin-top:10px;
     border:none;
     border-radius:10px;
-    background:linear-gradient(90deg,#00f7ff,#0072ff);
-    color:black;
+    background:#00f7ff;
     font-weight:bold;
+    font-size:16px;
     cursor:pointer;
 }
 
-button:hover{
-    transform:scale(1.03);
-}
-
+/* RESULTADO */
 #resultado{
     margin-top:15px;
     text-align:center;
+    font-size:18px;
     color:#00ffcc;
 }
 
-canvas{
-    margin-top:15px;
+/* RESPONSIVE EXTRA */
+@media(max-width:480px){
+    .container{
+        margin:10px;
+        padding:15px;
+    }
+
+    .logo img{
+        width:160px;
+    }
 }
 </style>
 </head>
@@ -80,20 +88,18 @@ canvas{
 
 <div class="container">
 
-<div class="logo">🚀 ORION</div>
-<h2>Simulador PRO</h2>
+<div class="logo">
+    <img src="logo.png" alt="ORION">
+</div>
 
-<input id="balance" value="1500" placeholder="Balance ($)">
-<input id="lot" value="0.30" placeholder="Lote">
-<input id="leverage" value="500" placeholder="Leverage">
-<input id="stopout" value="20" placeholder="Stop Out (%)">
+<input id="balance" placeholder="Balance ($)" value="1500">
+<input id="lot" placeholder="Lote" value="0.30">
+<input id="leverage" placeholder="Leverage" value="500">
+<input id="stopout" placeholder="Stop Out (%)" value="20">
 
-<button onclick="simular()">Simular</button>
-<button onclick="mejorLote()">Mejor lote</button>
+<button onclick="simular()">SIMULAR</button>
 
 <div id="resultado"></div>
-
-<canvas id="grafico"></canvas>
 
 </div>
 
@@ -102,9 +108,6 @@ canvas{
 let entradas = [0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
 14200,19200,25200,32200,40200,49200,59200,69200,79200,89200,99200,109200,119200,129200];
 
-let chart;
-
-// SIMULACIÓN
 function simular(){
 
 let balance = parseFloat(document.getElementById("balance").value);
@@ -112,20 +115,27 @@ let lot = parseFloat(document.getElementById("lot").value);
 let leverage = parseFloat(document.getElementById("leverage").value);
 let stopout = parseFloat(document.getElementById("stopout").value);
 
-if(isNaN(balance) || isNaN(lot)){
-    resultado.innerHTML = "❌ Datos inválidos";
+if(isNaN(balance) || isNaN(lot) || isNaN(leverage)){
+    document.getElementById("resultado").innerHTML = "❌ Datos inválidos";
     return;
 }
 
+// valor del pip
 let pipValue = 0.0001 * (lot/0.01);
 
-let equityArray = [];
-let pipArray = [];
+// 🔥 VALIDACIÓN DE MUERTE INMEDIATA
+let marginInicial = (lot * 100000) / leverage;
 
-let muerto = false;
-let muertePips = 0;
+if(marginInicial > balance){
+    document.getElementById("resultado").innerHTML =
+    "💀 MUERTE INMEDIATA<br>No alcanza el margen para 1 operación";
+    return;
+}
 
-for(let drop=0; drop<=150000; drop+=500){
+let muerteExacta = 0;
+
+// 🔥 CÁLCULO PRECISO (1 pip real)
+for(let drop=0; drop<=150000; drop++){
 
     let loss = 0;
     let ops = 0;
@@ -140,91 +150,19 @@ for(let drop=0; drop<=150000; drop+=500){
     let margin = (lot * ops * 100000) / leverage;
     let equity = balance - loss;
 
-    if(margin === 0) margin = 1;
+    if(margin === 0) continue;
 
     let marginLevel = (equity / margin) * 100;
 
-    equityArray.push(equity);
-    pipArray.push(drop);
-
     if(marginLevel <= stopout){
-        muerto = true;
-        muertePips = drop;
+        muerteExacta = drop;
         break;
     }
 }
 
-resultado.innerHTML = muerto
-? "💀 Margin Call en: <b>" + muertePips.toLocaleString() + " pips</b>"
-: "🔥 Sobrevive todo el rango";
+document.getElementById("resultado").innerHTML =
+"💀 Margin Call en:<br><b>" + muerteExacta.toLocaleString() + " pips</b>";
 
-dibujarGrafico(pipArray, equityArray);
-}
-
-// MEJOR LOTE
-function mejorLote(){
-
-let balance = parseFloat(document.getElementById("balance").value);
-
-let mejor = 0;
-
-for(let lot=0.01; lot<=1; lot+=0.01){
-
-    let pipValue = 0.0001 * (lot/0.01);
-    let sobrevive = true;
-
-    for(let drop=0; drop<=120000; drop+=1000){
-
-        let loss = 0;
-
-        for(let i=0;i<entradas.length;i++){
-            if(drop >= entradas[i]){
-                loss += (drop - entradas[i]) * pipValue;
-            }
-        }
-
-        let equity = balance - loss;
-
-        if(equity <= 0){
-            sobrevive = false;
-            break;
-        }
-    }
-
-    if(sobrevive){
-        mejor = lot;
-    }
-}
-
-resultado.innerHTML = "✅ Mejor lote aprox: <b>" + mejor.toFixed(2) + "</b>";
-}
-
-// GRÁFICO
-function dibujarGrafico(pips, equity){
-
-if(chart) chart.destroy();
-
-let ctx = document.getElementById("grafico");
-
-chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: pips,
-        datasets: [{
-            label: 'Equity',
-            data: equity,
-            borderWidth: 2,
-            tension: 0.2
-        }]
-    },
-    options:{
-        plugins:{legend:{labels:{color:"white"}}},
-        scales:{
-            x:{ticks:{color:"white"}},
-            y:{ticks:{color:"white"}}
-        }
-    }
-});
 }
 
 </script>
