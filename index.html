@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ORION ULTRA PRO</title>
+<title>ORION PRO+</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
     margin:0;
-    font-family: 'Segoe UI', sans-serif;
+    font-family:'Segoe UI';
     background:#0a0f1c;
     color:white;
 }
@@ -20,15 +20,8 @@ body{
     text-align:center;
     padding:20px;
 }
-
-.header img{
-    width:220px;
-}
-
-.sub{
-    color:#00f7ff;
-    letter-spacing:2px;
-}
+.header img{width:200px;}
+.sub{color:#00f7ff;}
 
 /* GRID */
 .container{
@@ -43,12 +36,16 @@ body{
     padding:15px;
     border-radius:15px;
     box-shadow:0 0 20px rgba(0,255,255,0.1);
+    transition:0.3s;
+}
+.card:hover{
+    transform:scale(1.02);
 }
 
 /* INPUTS */
 input{
     width:100%;
-    padding:10px;
+    padding:12px;
     margin:6px 0;
     border:none;
     border-radius:8px;
@@ -56,34 +53,46 @@ input{
     color:white;
 }
 
-/* BOTONES */
+/* BUTTON */
 button{
     width:100%;
     padding:12px;
     margin-top:8px;
     border:none;
     border-radius:10px;
-    background:#00f7ff;
+    background:linear-gradient(90deg,#00f7ff,#0072ff);
+    color:black;
     font-weight:bold;
     cursor:pointer;
+    transition:0.3s;
 }
+button:hover{transform:scale(1.05);}
 
-/* RESULT */
+/* RESULTADOS */
 .result{
     text-align:center;
     font-size:22px;
-    color:#ff4d4d;
+    margin-top:10px;
 }
 
-.ok{
-    color:#00ff88;
+/* BARRA DE RIESGO */
+.risk-bar{
+    height:10px;
+    border-radius:5px;
+    margin-top:10px;
+    background:#333;
+    overflow:hidden;
+}
+.risk-fill{
+    height:100%;
+    width:0%;
+    background:lime;
+    transition:0.5s;
 }
 
 /* RESPONSIVE */
 @media(max-width:800px){
-    .container{
-        grid-template-columns:1fr;
-    }
+    .container{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -91,8 +100,8 @@ button{
 <body>
 
 <div class="header">
-    <img src="logo.png">
-    <div class="sub">SIMULADOR ULTRA PRO</div>
+<img src="logo.png">
+<div class="sub">SIMULADOR PRO+</div>
 </div>
 
 <div class="container">
@@ -101,28 +110,32 @@ button{
 <div class="card">
 <h3>CONFIGURACIÓN</h3>
 
-<input id="balance" value="1500" placeholder="Balance">
-<input id="lot" value="0.30" placeholder="Lote">
-<input id="leverage" value="500" placeholder="Leverage">
-<input id="stopout" value="20" placeholder="Stop Out %">
+<input id="balance" value="1500">
+<input id="lot" value="0.30">
+<input id="leverage" value="500">
+<input id="stopout" value="20">
 
 <button onclick="simular()">SIMULAR</button>
 <button onclick="mejorLote()">MEJOR LOTE</button>
 
 </div>
 
-<!-- RESULTADO -->
+<!-- RESULT -->
 <div class="card">
 <h3>RESULTADO</h3>
 
 <div id="resultado" class="result"></div>
-<div id="extra"></div>
+<div id="info"></div>
+
+<div class="risk-bar">
+<div id="riskFill" class="risk-fill"></div>
+</div>
 
 </div>
 
 <!-- GRAFICO -->
 <div class="card" style="grid-column:span 2;">
-<h3>GRÁFICO DE EQUITY</h3>
+<h3>EVOLUCIÓN DE EQUITY</h3>
 <canvas id="grafico"></canvas>
 </div>
 
@@ -130,7 +143,7 @@ button{
 
 <script>
 
-let entradas = [0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
+let entradas=[0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
 14200,19200,25200,32200,40200,49200,59200,69200,79200,89200,99200,109200,119200,129200];
 
 let chart;
@@ -138,123 +151,140 @@ let chart;
 // SIMULAR
 function simular(){
 
-let balance = parseFloat(balance.value);
-let lot = parseFloat(lotInput.value);
-let leverage = parseFloat(leverage.value);
-let stopout = parseFloat(stopout.value);
+let balance=parseFloat(balance.value);
+let lot=parseFloat(lot.value);
+let leverage=parseFloat(leverage.value);
+let stopout=parseFloat(stopout.value);
 
-// FIX IDs
-balance = parseFloat(document.getElementById("balance").value);
-lot = parseFloat(document.getElementById("lot").value);
-leverage = parseFloat(document.getElementById("leverage").value);
-stopout = parseFloat(document.getElementById("stopout").value);
+// FIX
+balance=parseFloat(document.getElementById("balance").value);
+lot=parseFloat(document.getElementById("lot").value);
+leverage=parseFloat(document.getElementById("leverage").value);
+stopout=parseFloat(document.getElementById("stopout").value);
 
-let pipValue = 0.0001 * (lot/0.01);
+let pipValue=0.0001*(lot/0.01);
 
 // VALIDACIÓN
-let marginInicial = (lot * 100000) / leverage;
+let marginInicial=(lot*100000)/leverage;
 
-if(marginInicial > balance){
-    resultado.innerHTML = "💀 MUERTE INMEDIATA";
+if(marginInicial>balance){
+    resultado.innerHTML="💀 MUERTE INMEDIATA";
+    resultado.style.color="red";
     return;
 }
 
-let equityArr = [];
-let pipArr = [];
+let equityArr=[], pipArr=[];
+let muerte=0;
 
-let muerte = 0;
+for(let drop=0;drop<=150000;drop++){
 
-for(let drop=0; drop<=150000; drop++){
+let loss=0, ops=0;
 
-    let loss = 0;
-    let ops = 0;
-
-    for(let i=0;i<entradas.length;i++){
-        if(drop >= entradas[i]){
-            loss += (drop - entradas[i]) * pipValue;
-            ops++;
-        }
-    }
-
-    let margin = (lot * ops * 100000) / leverage;
-    let equity = balance - loss;
-
-    if(margin === 0) continue;
-
-    let level = (equity / margin) * 100;
-
-    equityArr.push(equity);
-    pipArr.push(drop);
-
-    if(level <= stopout){
-        muerte = drop;
-        break;
-    }
+for(let i=0;i<entradas.length;i++){
+if(drop>=entradas[i]){
+loss+=(drop-entradas[i])*pipValue;
+ops++;
+}
 }
 
-resultado.innerHTML = "💀 Margin Call en<br>" + muerte.toLocaleString() + " pips";
+let margin=(lot*ops*100000)/leverage;
+let equity=balance-loss;
 
-dibujarGrafico(pipArr, equityArr);
+if(margin===0)continue;
+
+let level=(equity/margin)*100;
+
+equityArr.push(equity);
+pipArr.push(drop);
+
+if(level<=stopout){
+muerte=drop;
+break;
+}
+}
+
+// RESULTADO
+resultado.innerHTML="💀 Margin Call<br>"+muerte.toLocaleString()+" pips";
+
+// COLOR DINÁMICO
+let ratio=muerte/120000;
+let fill=document.getElementById("riskFill");
+
+fill.style.width=(ratio*100)+"%";
+
+if(ratio<0.3){fill.style.background="red";}
+else if(ratio<0.6){fill.style.background="orange";}
+else{fill.style.background="lime";}
+
+// INFO EXTRA
+info.innerHTML="Resistencia: "+(ratio*100).toFixed(1)+"% del objetivo";
+
+// GRAFICO
+dibujarGrafico(pipArr,equityArr);
 
 }
 
 // MEJOR LOTE
 function mejorLote(){
 
-let balance = parseFloat(document.getElementById("balance").value);
+let balance=parseFloat(document.getElementById("balance").value);
 
-let mejor = 0;
+let mejor=0;
 
-for(let l=0.01; l<=1; l+=0.01){
+for(let l=0.01;l<=1;l+=0.01){
 
-    let pipValue = 0.0001 * (l/0.01);
-    let sobrevive = true;
+let pipValue=0.0001*(l/0.01);
+let sobrevive=true;
 
-    for(let drop=0; drop<=120000; drop+=1000){
+for(let drop=0;drop<=120000;drop+=1000){
 
-        let loss = 0;
+let loss=0;
 
-        for(let i=0;i<entradas.length;i++){
-            if(drop >= entradas[i]){
-                loss += (drop - entradas[i]) * pipValue;
-            }
-        }
-
-        let equity = balance - loss;
-
-        if(equity <= 0){
-            sobrevive = false;
-            break;
-        }
-    }
-
-    if(sobrevive){
-        mejor = l;
-    }
+for(let i=0;i<entradas.length;i++){
+if(drop>=entradas[i]){
+loss+=(drop-entradas[i])*pipValue;
+}
 }
 
-resultado.innerHTML = "✅ Mejor lote: " + mejor.toFixed(2);
+let equity=balance-loss;
 
+if(equity<=0){
+sobrevive=false;
+break;
+}
+}
+
+if(sobrevive)mejor=l;
+}
+
+resultado.innerHTML="✅ Mejor lote: "+mejor.toFixed(2);
+resultado.style.color="#00ff88";
 }
 
 // GRAFICO
-function dibujarGrafico(pips, equity){
+function dibujarGrafico(pips,equity){
 
-if(chart) chart.destroy();
+if(chart)chart.destroy();
 
-let ctx = document.getElementById("grafico");
-
-chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: pips,
-        datasets: [{
-            label: 'Equity',
-            data: equity,
-            borderWidth: 2
-        }]
-    }
+chart=new Chart(document.getElementById("grafico"),{
+type:'line',
+data:{
+labels:pips,
+datasets:[{
+data:equity,
+borderWidth:2,
+tension:0.3
+}]
+},
+options:{
+plugins:{legend:{display:false}},
+scales:{
+x:{ticks:{color:"white"}},
+y:{ticks:{color:"white"}}
+}
+}
 });
+
 }
 
 </script>
