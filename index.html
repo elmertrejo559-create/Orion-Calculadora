@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ORION PRO</title>
+<title>ORION ULTRA PRO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
@@ -11,74 +13,76 @@ body{
     font-family: 'Segoe UI', sans-serif;
     background:#0a0f1c;
     color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
 }
 
-.container{
-    width:100%;
-    max-width:420px;
-    padding:20px;
-    background:#111;
-    border-radius:15px;
-    box-shadow:0 0 20px rgba(0,255,255,0.2);
-}
-
-/* LOGO */
-.logo{
+/* HEADER */
+.header{
     text-align:center;
-    margin-bottom:15px;
+    padding:20px;
 }
 
-.logo img{
-    width:200px;
-    max-width:100%;
+.header img{
+    width:220px;
+}
+
+.sub{
+    color:#00f7ff;
+    letter-spacing:2px;
+}
+
+/* GRID */
+.container{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+    padding:15px;
+}
+
+.card{
+    background:#111;
+    padding:15px;
+    border-radius:15px;
+    box-shadow:0 0 20px rgba(0,255,255,0.1);
 }
 
 /* INPUTS */
 input{
     width:100%;
-    padding:12px;
+    padding:10px;
     margin:6px 0;
-    border-radius:8px;
     border:none;
+    border-radius:8px;
     background:#1a1a1a;
     color:white;
-    font-size:16px;
 }
 
 /* BOTONES */
 button{
     width:100%;
-    padding:14px;
-    margin-top:10px;
+    padding:12px;
+    margin-top:8px;
     border:none;
     border-radius:10px;
     background:#00f7ff;
     font-weight:bold;
-    font-size:16px;
     cursor:pointer;
 }
 
-/* RESULTADO */
-#resultado{
-    margin-top:15px;
+/* RESULT */
+.result{
     text-align:center;
-    font-size:18px;
-    color:#00ffcc;
+    font-size:22px;
+    color:#ff4d4d;
 }
 
-/* RESPONSIVE EXTRA */
-@media(max-width:480px){
-    .container{
-        margin:10px;
-        padding:15px;
-    }
+.ok{
+    color:#00ff88;
+}
 
-    .logo img{
-        width:160px;
+/* RESPONSIVE */
+@media(max-width:800px){
+    .container{
+        grid-template-columns:1fr;
     }
 }
 </style>
@@ -86,20 +90,41 @@ button{
 
 <body>
 
-<div class="container">
-
-<div class="logo">
-    <img src="logo.png" alt="ORION">
+<div class="header">
+    <img src="logo.png">
+    <div class="sub">SIMULADOR ULTRA PRO</div>
 </div>
 
-<input id="balance" placeholder="Balance ($)" value="1500">
-<input id="lot" placeholder="Lote" value="0.30">
-<input id="leverage" placeholder="Leverage" value="500">
-<input id="stopout" placeholder="Stop Out (%)" value="20">
+<div class="container">
+
+<!-- CONFIG -->
+<div class="card">
+<h3>CONFIGURACIÓN</h3>
+
+<input id="balance" value="1500" placeholder="Balance">
+<input id="lot" value="0.30" placeholder="Lote">
+<input id="leverage" value="500" placeholder="Leverage">
+<input id="stopout" value="20" placeholder="Stop Out %">
 
 <button onclick="simular()">SIMULAR</button>
+<button onclick="mejorLote()">MEJOR LOTE</button>
 
-<div id="resultado"></div>
+</div>
+
+<!-- RESULTADO -->
+<div class="card">
+<h3>RESULTADO</h3>
+
+<div id="resultado" class="result"></div>
+<div id="extra"></div>
+
+</div>
+
+<!-- GRAFICO -->
+<div class="card" style="grid-column:span 2;">
+<h3>GRÁFICO DE EQUITY</h3>
+<canvas id="grafico"></canvas>
+</div>
 
 </div>
 
@@ -108,33 +133,37 @@ button{
 let entradas = [0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
 14200,19200,25200,32200,40200,49200,59200,69200,79200,89200,99200,109200,119200,129200];
 
+let chart;
+
+// SIMULAR
 function simular(){
 
-let balance = parseFloat(document.getElementById("balance").value);
-let lot = parseFloat(document.getElementById("lot").value);
-let leverage = parseFloat(document.getElementById("leverage").value);
-let stopout = parseFloat(document.getElementById("stopout").value);
+let balance = parseFloat(balance.value);
+let lot = parseFloat(lotInput.value);
+let leverage = parseFloat(leverage.value);
+let stopout = parseFloat(stopout.value);
 
-if(isNaN(balance) || isNaN(lot) || isNaN(leverage)){
-    document.getElementById("resultado").innerHTML = "❌ Datos inválidos";
-    return;
-}
+// FIX IDs
+balance = parseFloat(document.getElementById("balance").value);
+lot = parseFloat(document.getElementById("lot").value);
+leverage = parseFloat(document.getElementById("leverage").value);
+stopout = parseFloat(document.getElementById("stopout").value);
 
-// valor del pip
 let pipValue = 0.0001 * (lot/0.01);
 
-// 🔥 VALIDACIÓN DE MUERTE INMEDIATA
+// VALIDACIÓN
 let marginInicial = (lot * 100000) / leverage;
 
 if(marginInicial > balance){
-    document.getElementById("resultado").innerHTML =
-    "💀 MUERTE INMEDIATA<br>No alcanza el margen para 1 operación";
+    resultado.innerHTML = "💀 MUERTE INMEDIATA";
     return;
 }
 
-let muerteExacta = 0;
+let equityArr = [];
+let pipArr = [];
 
-// 🔥 CÁLCULO PRECISO (1 pip real)
+let muerte = 0;
+
 for(let drop=0; drop<=150000; drop++){
 
     let loss = 0;
@@ -152,17 +181,80 @@ for(let drop=0; drop<=150000; drop++){
 
     if(margin === 0) continue;
 
-    let marginLevel = (equity / margin) * 100;
+    let level = (equity / margin) * 100;
 
-    if(marginLevel <= stopout){
-        muerteExacta = drop;
+    equityArr.push(equity);
+    pipArr.push(drop);
+
+    if(level <= stopout){
+        muerte = drop;
         break;
     }
 }
 
-document.getElementById("resultado").innerHTML =
-"💀 Margin Call en:<br><b>" + muerteExacta.toLocaleString() + " pips</b>";
+resultado.innerHTML = "💀 Margin Call en<br>" + muerte.toLocaleString() + " pips";
 
+dibujarGrafico(pipArr, equityArr);
+
+}
+
+// MEJOR LOTE
+function mejorLote(){
+
+let balance = parseFloat(document.getElementById("balance").value);
+
+let mejor = 0;
+
+for(let l=0.01; l<=1; l+=0.01){
+
+    let pipValue = 0.0001 * (l/0.01);
+    let sobrevive = true;
+
+    for(let drop=0; drop<=120000; drop+=1000){
+
+        let loss = 0;
+
+        for(let i=0;i<entradas.length;i++){
+            if(drop >= entradas[i]){
+                loss += (drop - entradas[i]) * pipValue;
+            }
+        }
+
+        let equity = balance - loss;
+
+        if(equity <= 0){
+            sobrevive = false;
+            break;
+        }
+    }
+
+    if(sobrevive){
+        mejor = l;
+    }
+}
+
+resultado.innerHTML = "✅ Mejor lote: " + mejor.toFixed(2);
+
+}
+
+// GRAFICO
+function dibujarGrafico(pips, equity){
+
+if(chart) chart.destroy();
+
+let ctx = document.getElementById("grafico");
+
+chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: pips,
+        datasets: [{
+            label: 'Equity',
+            data: equity,
+            borderWidth: 2
+        }]
+    }
+});
 }
 
 </script>
