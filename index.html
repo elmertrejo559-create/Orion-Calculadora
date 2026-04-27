@@ -2,231 +2,624 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ORION PRO</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#07090f;
+  --surface:#0d1220;
+  --surface2:#111827;
+  --surface3:#1a2235;
+  --accent:#00e5ff;
+  --accent2:#ff4d6d;
+  --accent3:#a78bfa;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+  --text3:#475569;
+  --border:#1e2d45;
+  --border2:#2a3f5c;
+  --glow:rgba(0,229,255,0.12);
+  --glow2:rgba(0,229,255,0.06);
+}
+
 body{
-    margin:0;
-    font-family: 'Segoe UI', sans-serif;
-    background:#0a0f1c;
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
+  font-family:'Rajdhani',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:16px;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,229,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(167,139,250,0.05) 0%, transparent 50%);
 }
 
-.container{
-    width:100%;
-    max-width:420px;
-    padding:20px;
-    background:#111;
-    border-radius:15px;
-    box-shadow:0 0 20px rgba(0,255,255,0.2);
+/* CARD */
+.card{
+  width:100%;
+  max-width:400px;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:24px;
+  overflow:hidden;
+  position:relative;
 }
 
-/* LOGO */
-.logo{
-    text-align:center;
-    margin-bottom:15px;
+.card::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:24px;
+  padding:1px;
+  background:linear-gradient(135deg, rgba(0,229,255,0.3), transparent 40%, rgba(167,139,250,0.2));
+  -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  pointer-events:none;
 }
 
-.logo img{
-    width:200px;
-    max-width:100%;
+/* HEADER */
+.header{
+  padding:28px 28px 20px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(0,229,255,0.04) 0%, transparent 100%);
+  position:relative;
 }
 
-/* INPUTS */
-input{
-    width:100%;
-    padding:12px;
-    margin:6px 0;
-    border-radius:8px;
-    border:none;
-    background:#1a1a1a;
-    color:white;
-    font-size:16px;
+.header-grid{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:4px;
 }
 
-/* BOTONES */
-button{
-    width:100%;
-    padding:14px;
-    margin-top:10px;
-    border:none;
-    border-radius:10px;
-    background:#00f7ff;
-    font-weight:bold;
-    font-size:16px;
-    cursor:pointer;
+.logo-text{
+  font-family:'Space Mono',monospace;
+  font-size:26px;
+  font-weight:700;
+  letter-spacing:4px;
+  color:var(--accent);
+  text-shadow:0 0 20px rgba(0,229,255,0.4);
 }
 
-/* RESULTADO */
-#resultado{
-    margin-top:15px;
-    text-align:center;
-    font-size:18px;
-    color:#00ffcc;
+.logo-badge{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:2px;
+  color:var(--accent3);
+  background:rgba(167,139,250,0.1);
+  border:1px solid rgba(167,139,250,0.25);
+  padding:3px 8px;
+  border-radius:4px;
+  text-transform:uppercase;
 }
 
-/* RESPONSIVE */
-@media(max-width:480px){
-    .container{
-        margin:10px;
-        padding:15px;
-    }
+.subtitle{
+  font-size:11px;
+  letter-spacing:3px;
+  color:var(--text3);
+  text-transform:uppercase;
+  margin-top:2px;
+}
 
-    .logo img{
-        width:160px;
-    }
+.pulse-dot{
+  display:inline-block;
+  width:6px;height:6px;
+  background:var(--accent);
+  border-radius:50%;
+  margin-right:8px;
+  animation:pulse 2s ease-in-out infinite;
+  box-shadow:0 0 6px var(--accent);
+}
+
+@keyframes pulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:0.4;transform:scale(0.7)}
+}
+
+/* BODY */
+.body{
+  padding:24px 24px 20px;
+}
+
+/* SECTION LABEL */
+.section-label{
+  font-size:10px;
+  letter-spacing:2.5px;
+  color:var(--text3);
+  text-transform:uppercase;
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.section-label::after{
+  content:'';
+  flex:1;
+  height:1px;
+  background:var(--border);
+}
+
+/* INPUT GROUP */
+.input-group{
+  margin-bottom:10px;
+  position:relative;
+}
+
+.input-label{
+  font-size:11px;
+  letter-spacing:1.5px;
+  color:var(--text2);
+  text-transform:uppercase;
+  margin-bottom:6px;
+  display:block;
+}
+
+.input-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+
+.input-icon{
+  position:absolute;
+  left:12px;
+  font-family:'Space Mono',monospace;
+  font-size:12px;
+  color:var(--text3);
+  pointer-events:none;
+  z-index:1;
+}
+
+.input-wrap input{
+  width:100%;
+  padding:12px 14px 12px 36px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  color:var(--text);
+  font-family:'Space Mono',monospace;
+  font-size:15px;
+  outline:none;
+  transition:all 0.2s ease;
+  -webkit-appearance:none;
+  appearance:none;
+}
+
+.input-wrap input:focus{
+  border-color:var(--accent);
+  background:var(--surface3);
+  box-shadow:0 0 0 3px rgba(0,229,255,0.08), inset 0 0 12px rgba(0,229,255,0.03);
+}
+
+.input-wrap input:hover{
+  border-color:var(--border2);
+}
+
+.input-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+/* BUTTONS */
+.btn-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin:20px 0 0;
+}
+
+.btn{
+  padding:14px 10px;
+  border:none;
+  border-radius:12px;
+  font-family:'Rajdhani',sans-serif;
+  font-weight:700;
+  font-size:15px;
+  letter-spacing:1.5px;
+  cursor:pointer;
+  text-transform:uppercase;
+  position:relative;
+  overflow:hidden;
+  transition:all 0.2s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.btn::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:rgba(255,255,255,0.08);
+  opacity:0;
+  transition:opacity 0.2s;
+}
+
+.btn:hover::after{opacity:1}
+.btn:active{transform:scale(0.97)}
+
+.btn-primary{
+  background:linear-gradient(135deg, #00b8cc 0%, #0088a8 100%);
+  color:#00f0ff;
+  color:#fff;
+  box-shadow:0 4px 20px rgba(0,184,204,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.btn-secondary{
+  background:linear-gradient(135deg, #2a1f4e 0%, #1e1640 100%);
+  color:var(--accent3);
+  border:1px solid rgba(167,139,250,0.3);
+  box-shadow:0 4px 15px rgba(167,139,250,0.1);
+}
+
+.btn-loading .btn-text{display:none}
+.btn-loading::before{
+  content:'';
+  display:inline-block;
+  width:16px;height:16px;
+  border:2px solid rgba(255,255,255,0.2);
+  border-top-color:white;
+  border-radius:50%;
+  animation:spin 0.7s linear infinite;
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* RESULT */
+.result-box{
+  margin-top:20px;
+  padding:20px;
+  background:var(--surface2);
+  border-radius:14px;
+  border:1px solid var(--border);
+  min-height:80px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  transition:all 0.3s ease;
+}
+
+.result-box.has-result{
+  border-color:rgba(0,229,255,0.2);
+  background:linear-gradient(135deg, rgba(0,229,255,0.03) 0%, var(--surface2) 100%);
+}
+
+.result-box.has-error{
+  border-color:rgba(255,77,109,0.3);
+  background:linear-gradient(135deg, rgba(255,77,109,0.04) 0%, var(--surface2) 100%);
+}
+
+.result-box.has-best{
+  border-color:rgba(167,139,250,0.3);
+  background:linear-gradient(135deg, rgba(167,139,250,0.04) 0%, var(--surface2) 100%);
+}
+
+.result-box::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(0,229,255,0.4), transparent);
+  opacity:0;
+  transition:opacity 0.3s;
+}
+
+.result-box.has-result::before{opacity:1}
+
+.result-placeholder{
+  font-size:13px;
+  color:var(--text3);
+  letter-spacing:1px;
+}
+
+.result-label{
+  font-size:10px;
+  letter-spacing:2.5px;
+  color:var(--text3);
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+
+.result-value{
+  font-family:'Space Mono',monospace;
+  font-size:28px;
+  font-weight:700;
+  color:var(--accent);
+  text-shadow:0 0 20px rgba(0,229,255,0.35);
+  line-height:1.1;
+}
+
+.result-value.error{
+  color:var(--accent2);
+  text-shadow:0 0 16px rgba(255,77,109,0.3);
+  font-size:18px;
+}
+
+.result-value.best{
+  color:var(--accent3);
+  text-shadow:0 0 20px rgba(167,139,250,0.35);
+}
+
+.result-sub{
+  font-size:12px;
+  color:var(--text2);
+  margin-top:4px;
+  letter-spacing:0.5px;
+}
+
+/* DIVIDER */
+.divider{
+  height:1px;
+  background:var(--border);
+  margin:20px 0 16px;
+}
+
+/* FOOTER */
+.footer{
+  padding:12px 24px 16px;
+  border-top:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.footer-tag{
+  font-size:10px;
+  letter-spacing:1.5px;
+  color:var(--text3);
+  text-transform:uppercase;
+}
+
+.status-indicator{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:10px;
+  letter-spacing:1px;
+  color:var(--text3);
+  text-transform:uppercase;
+}
+
+.status-dot{
+  width:5px;height:5px;
+  border-radius:50%;
+  background:#22d3ee;
+  animation:pulse 3s ease-in-out infinite;
+  box-shadow:0 0 6px #22d3ee;
+}
+
+/* SCAN LINE animation */
+@keyframes scanline{
+  0%{transform:translateY(-100%)}
+  100%{transform:translateY(400%)}
+}
+
+.scan-line{
+  position:absolute;
+  width:100%;
+  height:2px;
+  background:linear-gradient(90deg, transparent, rgba(0,229,255,0.15), transparent);
+  pointer-events:none;
+  animation:scanline 4s linear infinite;
+  opacity:0;
+}
+
+.result-box:hover .scan-line{opacity:1}
+
+/* slide-in animation */
+@keyframes slideIn{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.result-inner{animation:slideIn 0.3s ease}
+
+/* Responsive */
+@media(max-width:400px){
+  body{padding:8px}
+  .card{border-radius:20px}
+  .header{padding:22px 20px 16px}
+  .body{padding:18px 18px 16px}
+  .logo-text{font-size:22px}
+  .btn{font-size:13px;padding:13px 8px}
+  .result-value{font-size:24px}
 }
 </style>
 </head>
-
 <body>
 
-<div class="container">
+<div class="card">
+  <div class="header">
+    <div class="header-grid">
+      <div class="logo-text">ORION</div>
+      <div class="logo-badge">PRO v2</div>
+    </div>
+    <div class="subtitle"><span class="pulse-dot"></span>Margin Call Simulator</div>
+  </div>
 
-<div class="logo">
-    <img src="logo.png" alt="ORION">
-</div>
+  <div class="body">
+    <div class="section-label">Parámetros</div>
 
-<input id="balance" placeholder="Balance ($)" value="1500">
-<input id="lot" placeholder="Lote" value="0.30">
-<input id="leverage" placeholder="Leverage" value="500">
-<input id="stopout" placeholder="Stop Out (%)" value="20">
+    <div class="input-group">
+      <label class="input-label">Balance</label>
+      <div class="input-wrap">
+        <span class="input-icon">$</span>
+        <input id="balance" type="number" inputmode="decimal" placeholder="1500" value="1500" min="0">
+      </div>
+    </div>
 
-<button onclick="simular()">SIMULAR</button>
-<button onclick="mejorLote()">MEJOR LOTE</button>
+    <div class="input-grid">
+      <div class="input-group" style="margin-bottom:0">
+        <label class="input-label">Lote</label>
+        <div class="input-wrap">
+          <span class="input-icon">L</span>
+          <input id="lot" type="number" inputmode="decimal" placeholder="0.30" value="0.30" min="0.01" step="0.01">
+        </div>
+      </div>
+      <div class="input-group" style="margin-bottom:0">
+        <label class="input-label">Leverage</label>
+        <div class="input-wrap">
+          <span class="input-icon">×</span>
+          <input id="leverage" type="number" inputmode="decimal" placeholder="500" value="500" min="1">
+        </div>
+      </div>
+    </div>
 
-<div id="resultado"></div>
+    <div class="divider" style="margin:14px 0 12px"></div>
+    <div class="section-label">Config</div>
 
+    <div class="input-group">
+      <label class="input-label">Stop Out (%)</label>
+      <div class="input-wrap">
+        <span class="input-icon">%</span>
+        <input id="stopout" type="number" inputmode="decimal" placeholder="20" value="20" min="0">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-sim" onclick="simular()">
+        <span class="btn-text">Simular</span>
+      </button>
+      <button class="btn btn-secondary" id="btn-lot" onclick="mejorLote()">
+        <span class="btn-text">Mejor Lote</span>
+      </button>
+    </div>
+
+    <div class="result-box" id="result-container">
+      <span class="result-placeholder">— Esperando simulación —</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="footer-tag">Orion Systems</span>
+    <div class="status-indicator">
+      <span class="status-dot"></span>
+      <span>Online</span>
+    </div>
+  </div>
 </div>
 
 <script>
+document.getElementById('balance').addEventListener('change',function(){if(parseFloat(this.value)<0||this.value==='')this.value='0';});
+document.getElementById('lot').addEventListener('change',function(){let v=parseFloat(this.value);if(isNaN(v)||v<0.01)this.value='0.01';else this.value=(Math.round(v/0.01)*0.01).toFixed(2);});
+document.getElementById('leverage').addEventListener('change',function(){if(parseFloat(this.value)<1||this.value==='')this.value='1';});
+document.getElementById('stopout').addEventListener('change',function(){if(parseFloat(this.value)<0||this.value==='')this.value='0';});
 
-let entradas = [0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
+let entradas=[0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
 14200,19200,25200,32200,40200,49200,59200,69200,79200,89200,99200,109200,119200,129200];
 
-// SIMULAR
+function setLoading(btnId,on){
+  const b=document.getElementById(btnId);
+  if(on){b.classList.add('btn-loading');b.disabled=true}
+  else{b.classList.remove('btn-loading');b.disabled=false}
+}
+
+function showResult(html,type){
+  const c=document.getElementById('result-container');
+  c.className='result-box '+(type||'');
+  c.innerHTML='<div class="scan-line"></div><div class="result-inner">'+html+'</div>';
+}
+
+function showError(msg){
+  showResult('<div class="result-value error">'+msg+'</div>','has-error');
+}
+
 function simular(){
+  let balance=parseFloat(document.getElementById("balance").value);
+  let lot=parseFloat(document.getElementById("lot").value);
+  let leverage=parseFloat(document.getElementById("leverage").value);
+  let stopout=parseFloat(document.getElementById("stopout").value);
 
-let balance = parseFloat(document.getElementById("balance").value);
-let lot = parseFloat(document.getElementById("lot").value);
-let leverage = parseFloat(document.getElementById("leverage").value);
-let stopout = parseFloat(document.getElementById("stopout").value);
+  if(isNaN(balance)||isNaN(lot)||isNaN(leverage)){
+    showError('Datos inválidos');return;
+  }
 
-if(isNaN(balance) || isNaN(lot) || isNaN(leverage)){
-    document.getElementById("resultado").innerHTML = "❌ Datos inválidos";
-    return;
-}
+  setLoading('btn-sim',true);
 
-// valor del pip
-let pipValue = 0.0001 * (lot/0.01);
+  setTimeout(()=>{
+    let pipValue=0.0001*(lot/0.01);
+    let marginInicial=(lot*100000)/leverage;
 
-// validación margen
-let marginInicial = (lot * 100000) / leverage;
-
-if(marginInicial > balance){
-    document.getElementById("resultado").innerHTML =
-    "💀 MUERTE INMEDIATA<br>No alcanza el margen para 1 operación";
-    return;
-}
-
-let muerteExacta = 0;
-
-// cálculo preciso
-for(let drop=0; drop<=150000; drop++){
-
-    let loss = 0;
-    let ops = 0;
-
-    for(let i=0;i<entradas.length;i++){
-        if(drop >= entradas[i]){
-            loss += (drop - entradas[i]) * pipValue;
-            ops++;
-        }
+    if(marginInicial>balance){
+      showResult('<div class="result-label">Estado crítico</div><div class="result-value error">Muerte Inmediata</div><div class="result-sub">Margen insuficiente para 1 op.</div>','has-error');
+      setLoading('btn-sim',false);return;
     }
 
-    let margin = (lot * ops * 100000) / leverage;
-    let equity = balance - loss;
-
-    if(margin === 0) continue;
-
-    let marginLevel = (equity / margin) * 100;
-
-    if(marginLevel <= stopout){
-        muerteExacta = drop;
-        break;
+    let muerteExacta=0;
+    for(let drop=0;drop<=150000;drop++){
+      let loss=0,ops=0;
+      for(let i=0;i<entradas.length;i++){
+        if(drop>=entradas[i]){loss+=(drop-entradas[i])*pipValue;ops++;}
+      }
+      let margin=(lot*ops*100000)/leverage;
+      let equity=balance-loss;
+      if(margin===0)continue;
+      let marginLevel=(equity/margin)*100;
+      if(marginLevel<=stopout){muerteExacta=drop;break;}
     }
+
+    showResult(
+      '<div class="result-label">Margin Call en</div>'+
+      '<div class="result-value">'+muerteExacta.toLocaleString()+' pips</div>'+
+      '<div class="result-sub">con lote '+lot.toFixed(2)+' · balance $'+balance.toLocaleString()+'</div>',
+      'has-result'
+    );
+    setLoading('btn-sim',false);
+  },50);
 }
 
-document.getElementById("resultado").innerHTML =
-"💀 Margin Call en:<br><b>" + muerteExacta.toLocaleString() + " pips</b>";
-
-}
-
-// MEJOR LOTE
 function mejorLote(){
+  let balance=parseFloat(document.getElementById("balance").value);
+  let leverage=parseFloat(document.getElementById("leverage").value);
+  let stopout=parseFloat(document.getElementById("stopout").value);
 
-let balance = parseFloat(document.getElementById("balance").value);
-let leverage = parseFloat(document.getElementById("leverage").value);
-let stopout = parseFloat(document.getElementById("stopout").value);
+  if(isNaN(balance)||isNaN(leverage)){
+    showError('Datos inválidos');return;
+  }
 
-if(isNaN(balance) || isNaN(leverage)){
-    document.getElementById("resultado").innerHTML = "❌ Datos inválidos";
-    return;
-}
+  setLoading('btn-lot',true);
 
-let mejor = 0;
-
-for(let lot=0.01; lot<=1; lot+=0.01){
-
-    let pipValue = 0.0001 * (lot/0.01);
-
-    let marginInicial = (lot * 100000) / leverage;
-
-    if(marginInicial > balance) continue;
-
-    let sobrevive = true;
-
-    for(let drop=0; drop<=120000; drop+=1000){
-
-        let loss = 0;
-        let ops = 0;
-
+  setTimeout(()=>{
+    let mejor=0;
+    for(let lot=0.01;lot<=1;lot+=0.01){
+      let pipValue=0.0001*(lot/0.01);
+      let marginInicial=(lot*100000)/leverage;
+      if(marginInicial>balance)continue;
+      let sobrevive=true;
+      for(let drop=0;drop<=120000;drop+=1000){
+        let loss=0,ops=0;
         for(let i=0;i<entradas.length;i++){
-            if(drop >= entradas[i]){
-                loss += (drop - entradas[i]) * pipValue;
-                ops++;
-            }
+          if(drop>=entradas[i]){loss+=(drop-entradas[i])*pipValue;ops++;}
         }
-
-        let margin = (lot * ops * 100000) / leverage;
-        let equity = balance - loss;
-
-        if(margin === 0) continue;
-
-        let marginLevel = (equity / margin) * 100;
-
-        if(marginLevel <= stopout){
-            sobrevive = false;
-            break;
-        }
+        let margin=(lot*ops*100000)/leverage;
+        let equity=balance-loss;
+        if(margin===0)continue;
+        let marginLevel=(equity/margin)*100;
+        if(marginLevel<=stopout){sobrevive=false;break;}
+      }
+      if(sobrevive)mejor=lot;
     }
 
-    if(sobrevive){
-        mejor = lot;
-    }
+    showResult(
+      '<div class="result-label">Lote óptimo</div>'+
+      '<div class="result-value best">'+mejor.toFixed(2)+'</div>'+
+      '<div class="result-sub">balance $'+balance.toLocaleString()+' · ×'+leverage+'</div>',
+      'has-best'
+    );
+    setLoading('btn-lot',false);
+  },50);
 }
-
-document.getElementById("resultado").innerHTML =
-"✅ Mejor lote: <b>" + mejor.toFixed(2) + "</b>";
-
-}
-
 </script>
-
 </body>
 </html>
