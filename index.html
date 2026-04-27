@@ -38,17 +38,21 @@ body{
     box-shadow:0 0 20px rgba(0,255,255,0.1);
     transition:0.3s;
 }
-.card:hover{
-    transform:scale(1.02);
-}
+.card:hover{transform:scale(1.02);}
 
 /* INPUTS */
-<input id="balance" value="1500" placeholder="Balance ($)">
-<input id="lot" value="0.30" placeholder="Lote">
-<input id="leverage" value="500" placeholder="Leverage">
-<input id="stopout" value="20" placeholder="Stop Out %">
+input{
+    width:100%;
+    padding:12px;
+    margin:6px 0;
+    border:none;
+    border-radius:8px;
+    background:#1a1a1a;
+    color:white;
+    font-size:16px;
+}
 
-/* BUTTON */
+/* BOTONES */
 button{
     width:100%;
     padding:12px;
@@ -59,9 +63,7 @@ button{
     color:black;
     font-weight:bold;
     cursor:pointer;
-    transition:0.3s;
 }
-button:hover{transform:scale(1.05);}
 
 /* RESULTADOS */
 .result{
@@ -76,12 +78,12 @@ button:hover{transform:scale(1.05);}
     border-radius:5px;
     margin-top:10px;
     background:#333;
-    overflow:hidden;
 }
 .risk-fill{
     height:100%;
     width:0%;
     background:lime;
+    border-radius:5px;
     transition:0.5s;
 }
 
@@ -105,10 +107,10 @@ button:hover{transform:scale(1.05);}
 <div class="card">
 <h3>CONFIGURACIÓN</h3>
 
-<input id="balance" value="1500">
-<input id="lot" value="0.30">
-<input id="leverage" value="500">
-<input id="stopout" value="20">
+<input id="balance" value="1500" placeholder="Balance ($)">
+<input id="lot" value="0.30" placeholder="Lote">
+<input id="leverage" value="500" placeholder="Leverage">
+<input id="stopout" value="20" placeholder="Stop Out %">
 
 <button onclick="simular()">SIMULAR</button>
 <button onclick="mejorLote()">MEJOR LOTE</button>
@@ -144,36 +146,35 @@ let entradas=[0,300,700,1200,1800,2500,3300,4200,5200,7200,10200,
 let chart;
 
 // SIMULAR
+function simular(){
+
 let balance = parseFloat(document.getElementById("balance").value);
 let lot = parseFloat(document.getElementById("lot").value);
 let leverage = parseFloat(document.getElementById("leverage").value);
 let stopout = parseFloat(document.getElementById("stopout").value);
 
+// VALIDACIÓN
 if(isNaN(balance) || isNaN(lot) || isNaN(leverage) || isNaN(stopout)){
     document.getElementById("resultado").innerHTML = "⚠️ Completa todos los campos";
     return;
 }
-// FIX
-balance=parseFloat(document.getElementById("balance").value);
-lot=parseFloat(document.getElementById("lot").value);
-leverage=parseFloat(document.getElementById("leverage").value);
-stopout=parseFloat(document.getElementById("stopout").value);
 
-let pipValue=0.0001*(lot/0.01);
+let pipValue = 0.0001 * (lot/0.01);
 
-// VALIDACIÓN
-let marginInicial=(lot*100000)/leverage;
+// VALIDACIÓN MARGEN
+let marginInicial = (lot * 100000) / leverage;
 
-if(marginInicial>balance){
-    resultado.innerHTML="💀 MUERTE INMEDIATA";
-    resultado.style.color="red";
+if(marginInicial > balance){
+    document.getElementById("resultado").innerHTML = "💀 MUERTE INMEDIATA";
+    document.getElementById("resultado").style.color="red";
     return;
 }
 
-let equityArr=[], pipArr=[];
-let muerte=0;
+let equityArr = [];
+let pipArr = [];
+let muerte = 0;
 
-for(let drop=0;drop<=150000;drop++){
+for(let drop=0; drop<=150000; drop++){
 
 let loss=0, ops=0;
 
@@ -187,7 +188,7 @@ ops++;
 let margin=(lot*ops*100000)/leverage;
 let equity=balance-loss;
 
-if(margin===0)continue;
+if(margin===0) continue;
 
 let level=(equity/margin)*100;
 
@@ -201,9 +202,10 @@ break;
 }
 
 // RESULTADO
-resultado.innerHTML="💀 Margin Call<br>"+muerte.toLocaleString()+" pips";
+document.getElementById("resultado").innerHTML =
+"💀 Margin Call en<br>"+muerte.toLocaleString()+" pips";
 
-// COLOR DINÁMICO
+// BARRA DE RIESGO
 let ratio=muerte/120000;
 let fill=document.getElementById("riskFill");
 
@@ -212,9 +214,6 @@ fill.style.width=(ratio*100)+"%";
 if(ratio<0.3){fill.style.background="red";}
 else if(ratio<0.6){fill.style.background="orange";}
 else{fill.style.background="lime";}
-
-// INFO EXTRA
-info.innerHTML="Resistencia: "+(ratio*100).toFixed(1)+"% del objetivo";
 
 // GRAFICO
 dibujarGrafico(pipArr,equityArr);
@@ -225,6 +224,11 @@ dibujarGrafico(pipArr,equityArr);
 function mejorLote(){
 
 let balance=parseFloat(document.getElementById("balance").value);
+
+if(isNaN(balance)){
+document.getElementById("resultado").innerHTML="⚠️ Ingresa balance";
+return;
+}
 
 let mejor=0;
 
@@ -251,17 +255,19 @@ break;
 }
 }
 
-if(sobrevive)mejor=l;
+if(sobrevive) mejor=l;
 }
 
-resultado.innerHTML="✅ Mejor lote: "+mejor.toFixed(2);
-resultado.style.color="#00ff88";
+document.getElementById("resultado").innerHTML =
+"✅ Mejor lote: "+mejor.toFixed(2);
+document.getElementById("resultado").style.color="#00ff88";
+
 }
 
 // GRAFICO
 function dibujarGrafico(pips,equity){
 
-if(chart)chart.destroy();
+if(chart) chart.destroy();
 
 chart=new Chart(document.getElementById("grafico"),{
 type:'line',
